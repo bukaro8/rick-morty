@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
 			allowNull: false,
 		},
 		origin: {
-			type: DataTypes.JSONB,
+			type: DataTypes.STRING,
 			allowNull: false,
 		},
 		image: {
@@ -33,6 +33,9 @@ module.exports = (sequelize) => {
 		createdInDb: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: true,
+		},
+		episode: {
+			type: DataTypes.ARRAY(DataTypes.STRING),
 		},
 	});
 };
