@@ -20,8 +20,8 @@ const createCharacter = (char) => {
 };
 const getApiInfo = async () => {
 	let allData = [];
-	for (let i = 0; i <= 41; i++) {
-		const res = await axios.get(`${apiLink}/character`);
+	for (let i = 1; i <= 41; i++) {
+		const res = await axios.get(`${apiLink}/character?page=${i}`);
 		const data = res.data.results;
 		allData = [...allData, ...data];
 	}
@@ -48,9 +48,30 @@ const getAllInfo = async () => {
 	allData = [...apiInfo, ...DbInfo];
 	return allData;
 };
+
+const fillDb = async () => {
+	let allData = [];
+	for (let i = 1; i < 4; i++) {
+		const resp = await axios.get(`${apiLink}/episode?page=${i}`);
+		const data = await resp.data.results;
+		allData = [...allData, ...data];
+	}
+	const mapped = allData.map((el) => {
+		return {
+			id: el.id,
+			name: el.name,
+		};
+	});
+
+	mapped?.forEach((el) => {
+		Episode.findOrCreate({
+			where: { id: el.id, name: el.name },
+		});
+	});
+};
 router.get('/', async (req, res) => {
 	try {
-		const data = await getDbInfo();
+		const data = await fillDb();
 		res.status(200).send(data);
 	} catch (error) {
 		res.status(400).send({ error: error.message });
