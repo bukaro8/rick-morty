@@ -15,9 +15,34 @@ const createCharacter = (char) => {
 		origin: char.origin.name,
 		image: char.image,
 		created: char.created,
-		episode: char.episode.map((el) => el),
 	};
 };
+router.post('/character', async (req, res) => {
+	const { name, species, origin, image, created, episode } = req.body;
+	if (!name || !species || !origin || !created || !episode) {
+		return res
+			.status(400)
+			.send({ error: 'You must fill up all the required fields' });
+	}
+	try {
+		const newChar = createCharacter({
+			name,
+			species,
+			origin,
+			image,
+			created,
+		});
+		const episodeDb = await Episode.findAll({
+			where: { name: episode },
+		});
+
+		const creatingChar = await Character.create(newChar);
+		creatingChar.addEpisode(episodeDb);
+		res.status(200).send(newChar);
+	} catch (error) {
+		res.status(400).send({ error: error.message });
+	}
+});
 const getApiInfo = async () => {
 	let allData = [];
 	for (let i = 1; i <= 41; i++) {
@@ -45,7 +70,7 @@ const getAllInfo = async () => {
 	let allData = [];
 	const apiInfo = await getApiInfo();
 	const DbInfo = await getDbInfo();
-	allData = [...apiInfo, ...DbInfo];
+	allData = [...DbInfo, ...apiInfo];
 	return allData;
 };
 
@@ -62,17 +87,17 @@ const fillDb = async () => {
 			name: el.name,
 		};
 	});
-
 	mapped?.forEach((el) => {
 		Episode.findOrCreate({
 			where: { id: el.id, name: el.name },
 		});
 	});
 };
-router.get('/', async (req, res) => {
+router.get('/episodes', async (req, res) => {
 	try {
 		const data = await fillDb();
-		res.status(200).send(data);
+		const DbData = await Episode.findAll();
+		res.status(200).send(DbData);
 	} catch (error) {
 		res.status(400).send({ error: error.message });
 	}
