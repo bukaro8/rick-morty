@@ -66,11 +66,37 @@ const getDbInfo = async () => {
 	});
 };
 
-const getAllInfo = async () => {
+const getAllInfo = async (order) => {
 	let allData = [];
 	const apiInfo = await getApiInfo();
 	const DbInfo = await getDbInfo();
+
 	allData = [...DbInfo, ...apiInfo];
+	if (order === 'asc') {
+		return allData.sort((a, b) => {
+			const ac = a.name.toLowerCase();
+			const bc = b.name.toLowerCase();
+			if (ac < bc) {
+				return -1;
+			}
+			if (ac > bc) {
+				return 1;
+			}
+			return 0;
+		});
+	} else if (order === 'desc') {
+		return allData.sort((a, b) => {
+			const ac = a.name.toLowerCase();
+			const bc = b.name.toLowerCase();
+			if (ac < bc) {
+				return 1;
+			}
+			if (ac > bc) {
+				return -1;
+			}
+			return 0;
+		});
+	}
 	return allData;
 };
 
@@ -104,17 +130,19 @@ router.get('/episodes', async (req, res) => {
 });
 router.get('/characters', async (req, res) => {
 	const { name } = req.query;
+	const { order } = req.query;
 	if (name) {
 		try {
 			const resp = await axios.get(`${apiLink}/character?name=${name}`);
 			const data = await resp.data.results;
+
 			res.status(200).send(data);
 		} catch (error) {
 			res.status(400).send({ error: error.message });
 		}
 	} else {
 		try {
-			const allData = await getAllInfo();
+			const allData = await getAllInfo(order);
 			res.status(200).send(allData);
 		} catch (error) {
 			res.status(400).send({ error: error.message });
