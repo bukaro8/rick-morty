@@ -133,8 +133,10 @@ router.get('/characters', async (req, res) => {
 	const { order } = req.query;
 	if (name) {
 		try {
-			const resp = await axios.get(`${apiLink}/character?name=${name}`);
-			const data = await resp.data.results;
+			const resp = await getAllInfo();
+			const data = await resp.filter((el) =>
+				el.name.toLowerCase().includes(name.toLowerCase())
+			);
 
 			res.status(200).send(data);
 		} catch (error) {
